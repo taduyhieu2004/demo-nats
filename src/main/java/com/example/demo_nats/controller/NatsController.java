@@ -13,7 +13,7 @@ public class  NatsController {
   private final Consumer consumer;
 
   @PostMapping("/send")
-  public void sendMessage(@RequestParam String message) {
+  public void sendMessage(@RequestParam String message) throws Exception {
     producer.sendMessage(message);
   }
 

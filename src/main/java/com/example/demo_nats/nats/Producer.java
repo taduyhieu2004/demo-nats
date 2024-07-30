@@ -1,16 +1,12 @@
 package com.example.demo_nats.nats;
 
-import io.nats.client.Connection;
 import io.nats.client.JetStream;
-import io.nats.client.JetStreamOptions;
-import io.nats.client.api.PublishAck;
+import io.nats.client.Message;
+import io.nats.client.impl.NatsMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -19,23 +15,18 @@ public class Producer {
 
   @Value("${job.nats.topic}")
   String topic;
+  private final JetStream jetStream;
 
-  private final Connection natsConnection;
+  public void sendMessage(String message) throws Exception {
+    log.info("Sending message: {}", message);
+    // Tạo một tin nhắn
+    Message msg = NatsMessage.builder()
+          .subject(topic)
+          .data(message.getBytes())
+          .build();
 
-  public void sendMessage(String message) {
-    try {
-      log.info("Sending message :{}", message);
-      JetStream jetStream = natsConnection.jetStream(JetStreamOptions.DEFAULT_JS_OPTIONS);
-      PublishAck ack = jetStream.publish(topic, message.getBytes());
-      log.info("da gui " + message);
-      if (ack.hasError()) {
-        log.error("Error publishing message: {}", ack.getError());
-      } else {
-        log.info("Message successfully published to {}, sequence: {}", topic, ack.getSeqno());
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    // Gửi tin nhắn và trả về xác nhận
+    jetStream.publish(msg);
   }
 
 }
